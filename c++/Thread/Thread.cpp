@@ -133,6 +133,8 @@ using namespace std;
  * 终极结论，不要使用detach()，只是用join()，这样就不存在局部变量失效导致线程对内存的非法引用问题
  */
 
+// 线程id概念：id是个数字，每个线程（不管是主线程还是子线程）实际上都对应一个数字，而且每个线程对应的这个数字都不同，也就是说，不同的线程id（数字）必然是不同的，线程id可以用c++标准库里的函数来获取，std::this_thread::get_thread()函数
+
 class A
 {
 public:
@@ -176,7 +178,7 @@ int main()
 	//int &mVary = mVar;
 	//char myBuf[] = "this is a test!";
 	//// thread myPrint(MyPrint, mVar, myBuf); // myBuf到底是什么时候转换成string的？ 
- //                                            // 事实上存在myBuf都被回收了（main函数执行完了），系统才用myBuf去转string的可能性，导致线程不稳定
+    //                                        // 事实上存在myBuf都被回收了（main函数执行完了），系统才用myBuf去转string的可能性，导致线程不稳定
 	//thread myPrint(MyPrint, mVar, string(myBuf)); // 这里将muBuf转换成临时的string对象，这是个可以保证在线程中肯定有效的对象，线程安全
 	//// myPrint.join();
 	//myPrint.detach(); // 子/主线程分别执行
