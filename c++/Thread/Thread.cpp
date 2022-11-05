@@ -22,28 +22,28 @@ using namespace std;
 //    cout << "thread end9..." << endl;
 //}
 
-class TA
-{
-public:
-    int &m_i;
-    TA(int& i) :m_i(i){
-        cout << "TA(int& i) 构造函数被执行 " << endl;
-    }
-    TA(const TA &ta) :m_i(ta.m_i) {
-        cout << "TA(int& i) 拷贝构造函数被执行 " << endl;
-    }
-    ~TA() {
-        cout << "~TA() 析构函数被执行 " << endl; // 线程中被复制进去的那个对象的析构
-    }
-    void operator()() { // 不能带参数
-        //cout << "my thread operator() start..." << endl;
-
-        //cout << "my thread operator() end..." << endl;
-
-        cout << "m_i is: " << m_i << endl; // 产生不可预料的结果
-    }
-
-};
+//class TA
+//{
+//public:
+//    int &m_i;
+//    TA(int& i) :m_i(i){
+//        cout << "TA(int& i) 构造函数被执行 " << endl;
+//    }
+//    TA(const TA &ta) :m_i(ta.m_i) {
+//        cout << "TA(int& i) 拷贝构造函数被执行 " << endl;
+//    }
+//    ~TA() {
+//        cout << "~TA() 析构函数被执行 " << endl; // 线程中被复制进去的那个对象的析构
+//    }
+//    void operator()() { // 不能带参数
+//        //cout << "my thread operator() start..." << endl;
+//
+//        //cout << "my thread operator() end..." << endl;
+//
+//        cout << "m_i is: " << m_i << endl; // 产生不可预料的结果
+//    }
+//
+//};
 
 int main()
 {
@@ -97,12 +97,23 @@ int main()
 
     // 这里大家可能还有个疑问，一旦调用了detach()，那我主线程执行结束了，这里用的这个ta对象还在吗？ 
     // 这个对象实际上是被复制到线程中去了，所以执行完主线程，ta被销毁，但是所复制的ta对象依旧存在
-    int myi = 6;
-    TA ta(myi);
-    thread myPrint(ta); // ta可调用对象
+    // int myi = 6;
+    // TA ta(myi);
+    // thread myPrint(ta); // ta可调用对象
     // myPrint.join(); // 等待子线程执行完毕
-    myPrint.detach();
+    // myPrint.detach();
 
+    auto MylambdaThread = [] {
+        cout << "MylambdaThread start..." << endl;
+
+        // do sth...
+
+        cout << "MylambdaThread end..." << endl;
+    };
+    thread mylambdaThread(MylambdaThread);
+    // mylambdaThread.join();
+    mylambdaThread.detach();
+    
     cout << "Hello World1!" << endl;
 
     return 0;
