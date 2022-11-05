@@ -8,5 +8,4 @@ set destPath=D:\GitRepository\Multi_threading\c++\Thread
 
 xcopy /s /e /y %srcPath% %destPath%
 
-pause
-
+exit
