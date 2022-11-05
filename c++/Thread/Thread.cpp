@@ -133,7 +133,7 @@ using namespace std;
  * 终极结论，不要使用detach()，只是用join()，这样就不存在局部变量失效导致线程对内存的非法引用问题
  */
 
-// 线程id概念：id是个数字，每个线程（不管是主线程还是子线程）实际上都对应一个数字，而且每个线程对应的这个数字都不同，也就是说，不同的线程id（数字）必然是不同的，线程id可以用c++标准库里的函数来获取，std::this_thread::get_thread()函数
+// 线程id概念：id是个数字，每个线程（不管是主线程还是子线程）实际上都对应一个数字，而且每个线程对应的这个数字都不同，也就是说，不同的线程id（数字）必然是不同的，线程id可以用c++标准库里的函数来获取，std::this_thread::get_id()函数
 
 class A
 {
@@ -141,17 +141,17 @@ public:
 	int m_i;
 	A(int a) :m_i(a) // 类型转换构造函数，可以把一个int转换成一个类A对象
 	{
-		cout << "A::A(int a)构造函数执行了"  << endl;
+		cout << "A::A(int a)构造函数执行了" << this << "thread_id = " << std::this_thread::get_id() << endl;
 	}
 
 	A(const A &a):m_i(a.m_i)
 	{
-		cout << "A::A(const A &a)拷贝构造函数执行了" << endl;
+		cout << "A::A(const A &a)拷贝构造函数执行了" << this << "thread_id = " << std::this_thread::get_id() << endl;
 	}
 
 	~A()
 	{
-		cout << "A::~A()析构函数执行了" << endl;
+		cout << "A::~A()析构函数执行了" << this << "thread_id = " << std::this_thread::get_id() << endl;
 	}
 
 };
@@ -166,28 +166,42 @@ public:
 //	return;
 //}
 
-void MyPrint(const int& i, const A &pMyBuf)
+//void MyPrint(const int& i, const A &pMyBuf)
+//{
+//	cout << &pMyBuf << endl; // 这里打印pMyBuf的地址
+//
+//	return;
+//}
+
+void MyPrint_2(const A &pMyBuf)
 {
-	cout << &pMyBuf << endl; // 这里打印pMyBuf的地址
+	cout << "子线程MyPrint_2的参数地址是：" << &pMyBuf << "thread_id = " << std::this_thread::get_id() << endl; // 这里打印pMyBuf的地址
 
 	return;
 }
+
 int main() 
 {
 	//int mVar = 1;
 	//int &mVary = mVar;
 	//char myBuf[] = "this is a test!";
 	//// thread myPrint(MyPrint, mVar, myBuf); // myBuf到底是什么时候转换成string的？ 
-    //                                        // 事实上存在myBuf都被回收了（main函数执行完了），系统才用myBuf去转string的可能性，导致线程不稳定
+    //                                         // 事实上存在myBuf都被回收了（main函数执行完了），系统才用myBuf去转string的可能性，导致线程不稳定
 	//thread myPrint(MyPrint, mVar, string(myBuf)); // 这里将muBuf转换成临时的string对象，这是个可以保证在线程中肯定有效的对象，线程安全
 	//// myPrint.join();
 	//myPrint.detach(); // 子/主线程分别执行
 
-	int mVar = 1;
-	int mySecondPar = 12;
+	//int mVar = 1;
+	//int mySecondPar = 12;
 	// thread myPrint(MyPrint, mVar, mySecondPar); // 这里我们希望mySecondPar转成A类型对象转递给MyPrint的第二个参数，这样啥也不会输出的
-	thread myPrint(MyPrint, mVar, A(mySecondPar)); // 构造临时A对象，程序可以执行，线程安全
+	// thread myPrint(MyPrint, mVar, A(mySecondPar)); // 构造临时A对象，程序可以执行，线程安全
 												   // 所以在创建线程的同时构造临时对象的方法传递参数是可行的
+
+	cout << "主线程id是：" << "thread_id = " << std::this_thread::get_id() << endl;
+	int mVar = 1;
+	// thread myPrint(MyPrint_2, mVar); // 将在子线程中构造A类对象
+	thread myPrint(MyPrint_2, A(mVar)); // 将在主线程中构造A类对象
+
 	// myPrint.join();
 	myPrint.detach(); // 子/主线程分别执行
 
