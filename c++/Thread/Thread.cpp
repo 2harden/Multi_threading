@@ -7,20 +7,43 @@
 using namespace std;
 
 // 自己创建的线程也要从一个函数开始运行
-void MyPrint() 
-{
-    cout << "thread start..." << endl;
+//void MyPrint() 
+//{
+//    cout << "thread start..." << endl;
+//
+//    cout << "thread end1..." << endl;
+//    cout << "thread end2..." << endl;
+//    cout << "thread end3..." << endl;
+//    cout << "thread end4..." << endl;
+//    cout << "thread end5..." << endl;
+//    cout << "thread end6..." << endl;
+//    cout << "thread end7..." << endl;
+//    cout << "thread end8..." << endl;
+//    cout << "thread end9..." << endl;
+//}
 
-    cout << "thread end1..." << endl;
-    cout << "thread end2..." << endl;
-    cout << "thread end3..." << endl;
-    cout << "thread end4..." << endl;
-    cout << "thread end5..." << endl;
-    cout << "thread end6..." << endl;
-    cout << "thread end7..." << endl;
-    cout << "thread end8..." << endl;
-    cout << "thread end9..." << endl;
-}
+class TA
+{
+public:
+    int &m_i;
+    TA(int& i) :m_i(i){
+        cout << "TA(int& i) 构造函数被执行 " << endl;
+    }
+    TA(const TA &ta) :m_i(ta.m_i) {
+        cout << "TA(int& i) 拷贝构造函数被执行 " << endl;
+    }
+    ~TA() {
+        cout << "~TA() 析构函数被执行 " << endl; // 线程中被复制进去的那个对象的析构
+    }
+    void operator()() { // 不能带参数
+        //cout << "my thread operator() start..." << endl;
+
+        //cout << "my thread operator() end..." << endl;
+
+        cout << "m_i is: " << m_i << endl; // 产生不可预料的结果
+    }
+
+};
 
 int main()
 {
@@ -35,10 +58,15 @@ int main()
     // 这条规律有例外，后面会解释这种例外，目前先这样理解和记忆
 
     // 编写多线程
+    // 方法1
     /*  1，包含头文件
      *  2，创建初始函数
      *  3，main函数中开始编写代码
      */
+
+     // 方法2
+     /*  用类对象（可调用对象）创建多线程
+      */
 
     // 多线程编程函数
     /* thread：是标准库的一个类
@@ -56,23 +84,26 @@ int main()
     // 这里要明确一点，有两个线程在跑，相当于整个程序的执行有两条线在同时走，所以可以干两个事。即使一条线被堵住了，另外一个还是可以通行的，这就是多线程
     // 如果主线程执行完了，但是子线程还没执行完毕，这种程序员是不合格的，写出来的程序也是不稳定的
     // 一个书写良好的程序，应该是主线程等待子线程执行完毕，主线程才能退出
-    thread myPrint(MyPrint); // thread：是标准库的一个类，MyPrint：是可调用对象。这一句整体就是创建了线程，线程执行起点（入口）MyPrint(),myPrint线程开始执行
+    // thread myPrint(MyPrint); // thread：是标准库的一个类，MyPrint：是可调用对象。这一句整体就是创建了线程，线程执行起点（入口）MyPrint(),myPrint线程开始执行
     // myPrint.join(); // 加入线程，说白了就是阻塞，阻塞主线程，让主线程等待子线程执行完毕，然后子线程和主线程会合，一起执行完毕。等待MyPrint()执行完毕
-    if (myPrint.joinable()) {
-        myPrint.join();
-        cout << "myPrint.joinable() is true" << endl;
-    }
-    else {
-        cout << "myPrint.joinable() is false" << endl;
-    }
+    //if (myPrint.joinable()) {
+    //    myPrint.join();
+    //    cout << "myPrint.joinable() is true" << endl;
+    //}
+    //else {
+    //    cout << "myPrint.joinable() is false" << endl;
+    //}
     // myPrint.detach(); // 主/子线程各执行各的，一旦调用了detach()，就再不能用join()，会有异常
 
+    // 这里大家可能还有个疑问，一旦调用了detach()，那我主线程执行结束了，这里用的这个ta对象还在吗？ 
+    // 这个对象实际上是被复制到线程中去了，所以执行完主线程，ta被销毁，但是所复制的ta对象依旧存在
+    int myi = 6;
+    TA ta(myi);
+    thread myPrint(ta); // ta可调用对象
+    // myPrint.join(); // 等待子线程执行完毕
+    myPrint.detach();
+
     cout << "Hello World1!" << endl;
-    cout << "Hello World2!" << endl;
-    cout << "Hello World3!" << endl;
-    cout << "Hello World4!" << endl;
-    cout << "Hello World5!" << endl;
-    cout << "Hello World6!" << endl;
 
     return 0;
 }
