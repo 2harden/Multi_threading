@@ -126,10 +126,34 @@ using namespace std;
 //}
 
 //============================================= 第二小节，线程传参
-void MyPrint(const int &i, char *pMyBuf)
+
+class A
+{
+public:
+	int m_i;
+	A(int a) :m_i(a) // 类型转换构造函数，可以把一个int转换成一个类A对象
+	{
+		cout << "A::A(int a)构造函数执行了"  << endl;
+	}
+
+	A(const A &a):m_i(a.m_i)
+	{
+		cout << "A::A(const A &a)拷贝构造函数执行了" << endl;
+	}
+
+	~A()
+	{
+		cout << "A::~A()析构函数执行了" << endl;
+	}
+
+};
+
+//void MyPrint(const int &i, char *pMyBuf)
+void MyPrint(const int& i, const string &pMyBuf)
 {
 	cout << i << endl; // 分析认为，i并不是mVar的引用，实际是值传递，那么我们认为，即使主线程detach了子线程，那么子线程中用的i值是安全的
-	cout << pMyBuf << endl; // 指针在detach子线程时，绝对会有问题，这里一定不要使用指针
+	// cout << pMyBuf << endl; // 指针在detach子线程时，绝对会有问题，这里一定不要使用指针
+	cout << pMyBuf.c_str() << endl;
 
 	return;
 }
@@ -138,7 +162,9 @@ int main()
 	int mVar = 1;
 	int &mVary = mVar;
 	char myBuf[] = "this is a test!";
-	thread myPrint(MyPrint, mVar, myBuf);
+	// thread myPrint(MyPrint, mVar, myBuf); // myBuf到底是什么时候转换成string的？ 
+										     // 事实上存在myBuf都被回收了（main函数执行完了），系统才用myBuf去转string的可能性，导致线程不稳定
+	thread myPrint(MyPrint, mVar, string(myBuf)); // 这里将muBuf转换成临时的string对象，这是个可以保证在线程中肯定有效的对象，线程安全
 	// myPrint.join();
 	myPrint.detach(); // 子/主线程分别执行
 
