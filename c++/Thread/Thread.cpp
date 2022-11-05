@@ -149,22 +149,37 @@ public:
 };
 
 //void MyPrint(const int &i, char *pMyBuf)
-void MyPrint(const int& i, const string &pMyBuf)
+//void MyPrint(const int& i, const string &pMyBuf)
+//{
+//	cout << i << endl; // 分析认为，i并不是mVar的引用，实际是值传递，那么我们认为，即使主线程detach了子线程，那么子线程中用的i值是安全的
+//	// cout << pMyBuf << endl; // 指针在detach子线程时，绝对会有问题，这里一定不要使用指针
+//	cout << pMyBuf.c_str() << endl;
+//
+//	return;
+//}
+
+void MyPrint(const int& i, const A &pMyBuf)
 {
-	cout << i << endl; // 分析认为，i并不是mVar的引用，实际是值传递，那么我们认为，即使主线程detach了子线程，那么子线程中用的i值是安全的
-	// cout << pMyBuf << endl; // 指针在detach子线程时，绝对会有问题，这里一定不要使用指针
-	cout << pMyBuf.c_str() << endl;
+	cout << &pMyBuf << endl; // 这里打印pMyBuf的地址
 
 	return;
 }
 int main() 
 {
+	//int mVar = 1;
+	//int &mVary = mVar;
+	//char myBuf[] = "this is a test!";
+	//// thread myPrint(MyPrint, mVar, myBuf); // myBuf到底是什么时候转换成string的？ 
+ //                                            // 事实上存在myBuf都被回收了（main函数执行完了），系统才用myBuf去转string的可能性，导致线程不稳定
+	//thread myPrint(MyPrint, mVar, string(myBuf)); // 这里将muBuf转换成临时的string对象，这是个可以保证在线程中肯定有效的对象，线程安全
+	//// myPrint.join();
+	//myPrint.detach(); // 子/主线程分别执行
+
 	int mVar = 1;
-	int &mVary = mVar;
-	char myBuf[] = "this is a test!";
-	// thread myPrint(MyPrint, mVar, myBuf); // myBuf到底是什么时候转换成string的？ 
-										     // 事实上存在myBuf都被回收了（main函数执行完了），系统才用myBuf去转string的可能性，导致线程不稳定
-	thread myPrint(MyPrint, mVar, string(myBuf)); // 这里将muBuf转换成临时的string对象，这是个可以保证在线程中肯定有效的对象，线程安全
+	int mySecondPar = 12;
+	// thread myPrint(MyPrint, mVar, mySecondPar); // 这里我们希望mySecondPar转成A类型对象转递给MyPrint的第二个参数，这样啥也不会输出的
+	thread myPrint(MyPrint, mVar, A(mySecondPar)); // 构造临时A对象，程序可以执行，线程安全
+												   // 所以在创建线程的同时构造临时对象的方法传递参数是可行的
 	// myPrint.join();
 	myPrint.detach(); // 子/主线程分别执行
 
