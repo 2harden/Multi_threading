@@ -176,10 +176,11 @@ public:
 //    return;
 //}
 
-void MyPrint_2(A &pMyBuf)
+// void MyPrint_2(A &pMyBuf)
+void MyPrint_2(unique_ptr<int> p)
 {
-    pMyBuf.m_i = 199; // 修改该值不会影响到main函数
-    cout << "子线程MyPrint_2的参数地址是：" << &pMyBuf << "thread_id = " << std::this_thread::get_id() << endl; // 这里打印pMyBuf的地址
+    // pMyBuf.m_i = 199; // 修改该值不会影响到main函数
+    // cout << "子线程MyPrint_2的参数地址是：" << &pMyBuf << "thread_id = " << std::this_thread::get_id() << endl; // 这里打印pMyBuf的地址
 
     return;
 }
@@ -206,9 +207,12 @@ int main()
     // thread myPrint(MyPrint_2, mVar); // 将在子线程中构造A类对象
     // thread myPrint(MyPrint_2, A(mVar)); // 将在主线程中构造A类对象
 
-    A a(10);
+    // A a(10);
     // thread myPrint(MyPrint_2, a); // 此处a的值传进去不会被 pMyBuf.m_i = 199 修改，实际上传进入的是a的拷贝
-    thread myPrint(MyPrint_2, std::ref(a)); // 这样写a的值传进去可以改变 pMyBuf.m_i = 199 
+    // thread myPrint(MyPrint_2, std::ref(a)); // 这样写a的值传进去可以改变 pMyBuf.m_i = 199 
+    unique_ptr<int> myP(new int(100));
+    thread myPrint(MyPrint_2, std::move(myP));
+
     myPrint.join();
     // myPrint.detach(); // 子/主线程分别执行
 
