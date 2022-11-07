@@ -135,10 +135,13 @@ using namespace std;
 
 // 线程id概念：id是个数字，每个线程（不管是主线程还是子线程）实际上都对应一个数字，而且每个线程对应的这个数字都不同，也就是说，不同的线程id（数字）必然是不同的，线程id可以用c++标准库里的函数来获取，std::this_thread::get_id()函数
 
+// 传递智能指针，类对象作为线程参数
+
+
 class A
 {
 public:
-    int m_i;
+    int m_i; // mutable关键字使即使m_i为const也可以修改
     A(int a) :m_i(a) // 类型转换构造函数，可以把一个int转换成一个类A对象
     {
         cout << "A::A(int a)构造函数执行了" << this << "thread_id = " << std::this_thread::get_id() << endl;
@@ -173,8 +176,9 @@ public:
 //    return;
 //}
 
-void MyPrint_2(const A &pMyBuf)
+void MyPrint_2(A &pMyBuf)
 {
+    pMyBuf.m_i = 199; // 修改该值不会影响到main函数
     cout << "子线程MyPrint_2的参数地址是：" << &pMyBuf << "thread_id = " << std::this_thread::get_id() << endl; // 这里打印pMyBuf的地址
 
     return;
@@ -197,13 +201,16 @@ int main()
     // thread myPrint(MyPrint, mVar, A(mySecondPar)); // 构造临时A对象，程序可以执行，线程安全
                                                       // 所以在创建线程的同时构造临时对象的方法传递参数是可行的
 
-    cout << "主线程id是：" << "thread_id = " << std::this_thread::get_id() << endl;
-    int mVar = 1;
+    // cout << "主线程id是：" << "thread_id = " << std::this_thread::get_id() << endl;
+    // int mVar = 1;
     // thread myPrint(MyPrint_2, mVar); // 将在子线程中构造A类对象
-    thread myPrint(MyPrint_2, A(mVar)); // 将在主线程中构造A类对象
+    // thread myPrint(MyPrint_2, A(mVar)); // 将在主线程中构造A类对象
 
-    // myPrint.join();
-    myPrint.detach(); // 子/主线程分别执行
+    A a(10);
+    // thread myPrint(MyPrint_2, a); // 此处a的值传进去不会被 pMyBuf.m_i = 199 修改，实际上传进入的是a的拷贝
+    thread myPrint(MyPrint_2, std::ref(a)); // 这样写a的值传进去可以改变 pMyBuf.m_i = 199 
+    myPrint.join();
+    // myPrint.detach(); // 子/主线程分别执行
 
     cout << "Hello World!" << endl;
 
